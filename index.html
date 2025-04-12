@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>簡易記帳網頁</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form > * { display: block; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>簡易記帳</h1>
+  
+  <!-- 記帳表單 -->
+  <form id="accountForm">
+    <label>日期：
+      <input type="date" name="date" required>
+    </label>
+    <label>類別：
+      <input type="text" name="category" placeholder="例：餐飲、交通" required>
+    </label>
+    <label>金額：
+      <input type="number" name="amount" placeholder="請輸入金額" required>
+    </label>
+    <label>備註：
+      <input type="text" name="notes" placeholder="備註內容">
+    </label>
+    <button type="submit">送出</button>
+  </form>
+
+  <!-- 顯示記帳資料 -->
+  <h2>記帳資料</h2>
+  <div id="records">載入中...</div>
+
+  <script>
+    // 請將此處網址換成你 Google Apps Script Web App 的部署網址
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxT_yFw54Jv219bprZEMuig26qHq5QK0Xv7rnmYz-QshVxFRc22fsYUCNmTlexfKQEIXQ/exec';
+
+    // 讀取並顯示資料
+    function fetchRecords() {
+      fetch(scriptURL)
+        .then(response => response.json())
+        .then(data => {
+          let html = data.map(record =>
+            `<p>
+              ${record.date} - ${record.category} - ${record.amount} - ${record.notes}
+            </p>`
+          ).join("");
+          document.getElementById("records").innerHTML = html || "目前無記錄。";
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("records").innerHTML = "讀取資料錯誤。";
+        });
+    }
+
+    // 初始載入資料
+    fetchRecords();
+
+    // 送出表單處理
+    document.getElementById("accountForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(result => {
+          if(result.result === "success"){
+            alert("資料已送出！");
+            fetchRecords();
+            this.reset();
+          }
+        })
+        .catch(error => console.error('送出錯誤:', error));
+    });
+  </script>
+</body>
+</html>
