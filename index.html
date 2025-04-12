@@ -1,77 +1,126 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>簡易記帳網頁</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form > * { display: block; margin: 10px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <title>記帳系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        form {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        form label {
+            display: block;
+            margin: 5px 0;
+        }
+        form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .record {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+        }
+    </style>
 </head>
 <body>
-  <h1>簡易記帳</h1>
-  
-  <!-- 記帳表單 -->
-  <form id="accountForm">
-    <label>日期：
-      <input type="date" name="date" required>
-    </label>
-    <label>類別：
-      <input type="text" name="category" placeholder="例：餐飲、交通" required>
-    </label>
-    <label>金額：
-      <input type="number" name="amount" placeholder="請輸入金額" required>
-    </label>
-    <label>備註：
-      <input type="text" name="notes" placeholder="備註內容">
-    </label>
-    <button type="submit">送出</button>
-  </form>
+    <div class="container">
+        <h1>記帳系統</h1>
+        <form id="accountForm">
+            <label for="date">日期:</label>
+            <input id="date" name="date" type="date" required>
+            
+            <label for="category">類別:</label>
+            <input id="category" name="category" type="text" placeholder="例如：餐飲、交通" required>
+            
+            <label for="amount">金額:</label>
+            <input id="amount" name="amount" type="number" step="0.01" placeholder="請輸入金額" required>
+            
+            <label for="notes">備註:</label>
+            <input id="notes" name="notes" type="text" placeholder="請輸入備註">
+            
+            <button type="submit">送出資料</button>
+        </form>
+        
+        <h2>記帳資料</h2>
+        <div id="records">載入中...</div>
+    </div>
 
-  <!-- 顯示記帳資料 -->
-  <h2>記帳資料</h2>
-  <div id="records">載入中...</div>
+    <script>
+        // 請將以下 URL 替換成你 Google Apps Script Web App 部署後獲得的 URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxT_yFw54Jv219bprZEMuig26qHq5QK0Xv7rnmYz-QshVxFRc22fsYUCNmTlexfKQEIXQ/exec';
 
-  <script>
-    // 請將此處網址換成你 Google Apps Script Web App 的部署網址
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxT_yFw54Jv219bprZEMuig26qHq5QK0Xv7rnmYz-QshVxFRc22fsYUCNmTlexfKQEIXQ/exec';
+        // 用 async/await 的方式讀取並顯示資料
+        async function fetchRecords() {
+            try {
+                const response = await fetch(scriptURL);
+                const data = await response.json();
+                const recordsContainer = document.getElementById("records");
+                if (data.length === 0) {
+                    recordsContainer.innerHTML = "目前尚無資料。";
+                    return;
+                }
+                let recordsHtml = data.map(record => {
+                    return `<div class="record">
+                        <strong>${record.date}</strong> - ${record.category} - ${record.amount} - ${record.notes}
+                        </div>`;
+                }).join('');
+                recordsContainer.innerHTML = recordsHtml;
+            } catch (error) {
+                console.error("讀取錯誤:", error);
+                document.getElementById("records").innerHTML = "讀取資料錯誤。";
+            }
+        }
 
-    // 讀取並顯示資料
-    function fetchRecords() {
-      fetch(scriptURL)
-        .then(response => response.json())
-        .then(data => {
-          let html = data.map(record =>
-            `<p>
-              ${record.date} - ${record.category} - ${record.amount} - ${record.notes}
-            </p>`
-          ).join("");
-          document.getElementById("records").innerHTML = html || "目前無記錄。";
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById("records").innerHTML = "讀取資料錯誤。";
+        // 綁定表單的 submit 事件來送出資料
+        document.getElementById("accountForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            try {
+                const response = await fetch(scriptURL, {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.result === "success") {
+                    alert("資料送出成功！");
+                    this.reset();
+                    fetchRecords(); // 重新載入資料
+                } else {
+                    alert("送出失敗，請稍後再試！");
+                }
+            } catch (error) {
+                console.error("送出錯誤:", error);
+                alert("送出資料時發生錯誤！");
+            }
         });
-    }
 
-    // 初始載入資料
-    fetchRecords();
-
-    // 送出表單處理
-    document.getElementById("accountForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      fetch(scriptURL, { method: 'POST', body: formData })
-        .then(response => response.json())
-        .then(result => {
-          if(result.result === "success"){
-            alert("資料已送出！");
-            fetchRecords();
-            this.reset();
-          }
-        })
-        .catch(error => console.error('送出錯誤:', error));
-    });
-  </script>
+        // 初始載入資料
+        fetchRecords();
+    </script>
 </body>
 </html>
