@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbx5jv2rJ5bOH5XsK0SjqtdGblN6idZiUSkcnwc6eb-KMb1JYMpgYZHDhEsGMemtrxRz/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx4acbw-0TFpZWJ4B4BdzFgx9CUlh2JU-wohJtHdHp8bw92TrV3jZL1F36h37nErMrL/exec';
 
 let dailyChart = null;
 let monthlyChart = null;
