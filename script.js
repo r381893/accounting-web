@@ -1,11 +1,10 @@
-// ← 貼上你自己的 Apps Script 執行 URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbzzgxcsXedjlI-HxJACN4X_rATrjnA2x860kizxaB-xdLJ6jwtFK63Mp5hqg_5DvNA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx0Q0QSnqreEygdhzkFEHyIBHxrntvxKg2qiefX9Ahh4RC4YM_moA7Z86yP-ED_ToSl/exec';
 
 let dailyChart = null;
 let monthlyChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 表單「日期」欄位預設為今天
+  // 預設日期為今天
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   fetchRecords();
 });
@@ -13,9 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('recordForm').addEventListener('submit', async e => {
   e.preventDefault();
 
-  // 取得目前時間 HH:mm
+  // 取得目前時間（HH:mm）
   const now = new Date();
-  const hhmm = now.toTimeString().slice(0,5);
+  const hhmm = now.toTimeString().slice(0, 5);
 
   const record = {
     date:     document.getElementById('date').value,
@@ -25,13 +24,13 @@ document.getElementById('recordForm').addEventListener('submit', async e => {
     notes:    document.getElementById('notes').value
   };
 
-  // POST 新增
+  // POST 新增記錄
   await fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify(record)
   });
 
-  // 重置表單並重新載入
+  // 清空表單並重新抓資料
   e.target.reset();
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   fetchRecords();
@@ -47,7 +46,8 @@ async function fetchRecords() {
 function renderList(records) {
   const ul = document.getElementById('recordList');
   ul.innerHTML = '';
-  // 反轉：最新在最上
+
+  // 最新的在最上面
   records.slice().reverse().forEach(rec => {
     const li = document.createElement('li');
     li.textContent = `${rec.date} ${rec.time} ｜ ${rec.category} ｜ $${rec.amount} ｜ ${rec.notes}`;
@@ -56,11 +56,12 @@ function renderList(records) {
 }
 
 function renderCharts(records) {
-  // —— 每日支出總計 —— 
+  // === 每日支出總和 ===
   const dailyMap = {};
   records.forEach(rec => {
-    dailyMap[rec.date] = (dailyMap[rec.date]||0) + rec.amount;
+    dailyMap[rec.date] = (dailyMap[rec.date] || 0) + rec.amount;
   });
+
   const dailyLabels = Object.keys(dailyMap).sort();
   const dailyValues = dailyLabels.map(d => dailyMap[d]);
 
@@ -69,25 +70,44 @@ function renderCharts(records) {
   dailyChart = new Chart(ctx1, {
     type: 'line',
     data: {
-      labels: dailyLabels,
+      labels: dailyLabels.map(formatDateLabel),
       datasets: [{
         label: '每日支出',
         data: dailyValues,
         borderColor: '#3B82F6',
-        fill: false,
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        fill: true,
         tension: 0.3
       }]
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: '日期 (月/日)'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: '金額'
+          },
+          beginAtZero: true
+        }
+      }
+    }
   });
 
-  // —— 每日最高支出 —— 
+  // === 每日最高支出 ===
   const maxMap = {};
   records.forEach(rec => {
     if (!maxMap[rec.date] || rec.amount > maxMap[rec.date].amount) {
       maxMap[rec.date] = rec;
     }
   });
+
   const maxLabels = Object.keys(maxMap).sort();
   const maxValues = maxLabels.map(d => maxMap[d].amount);
 
@@ -96,15 +116,39 @@ function renderCharts(records) {
   monthlyChart = new Chart(ctx2, {
     type: 'line',
     data: {
-      labels: maxLabels,
+      labels: maxLabels.map(formatDateLabel),
       datasets: [{
         label: '每日最高支出',
         data: maxValues,
         borderColor: '#10B981',
-        fill: false,
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        fill: true,
         tension: 0.3
       }]
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: '日期 (月/日)'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: '金額'
+          },
+          beginAtZero: true
+        }
+      }
+    }
   });
+}
+
+// yyyy-MM-dd → M/D
+function formatDateLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  return `${parseInt(m)}/${parseInt(d)}`;
 }
