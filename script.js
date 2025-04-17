@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxAJgXmLtBrqPCheOYlvXi-pCeFttSJG3aHK_kJqnIqtslGpIrk_NvfCsbbGWS5_oSJAQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbynB-cCkwm-Im2vqVl5Ug9RT8yUkY4jWJ930IdBf-MdwLa8FKjw7SkNShmf-gMQjaQyEw/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
