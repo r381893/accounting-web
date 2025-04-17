@@ -1,5 +1,5 @@
 // 把這裡替換成你自己的 Apps Script Web App URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbxey1neT__fTdPA0HveXTkPDaqhSr-vM4Zm52uM8TyndQtZTIPOyosmYSHu9qWGfaWkHw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxywazgJwZOzFzVek1lVG76mR7560liTzjOHOFdJQuXMoBHje9RWExRzX92G_7atJ7eSQ/exec';
 
 let dailyChart = null;
 let monthlyChart = null;
