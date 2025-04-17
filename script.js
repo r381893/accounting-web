@@ -1,6 +1,11 @@
+// 把這裡替換成你自己的 Apps Script Web App URL
 const API_URL = 'https://script.google.com/macros/s/AKfycbynB-cCkwm-Im2vqVl5Ug9RT8yUkY4jWJ930IdBf-MdwLa8FKjw7SkNShmf-gMQjaQyEw/exec';
 
+let dailyChart = null;
+let monthlyChart = null;
+
 document.addEventListener('DOMContentLoaded', () => {
+  // 預設今天日期
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   fetchRecords();
 });
@@ -9,10 +14,10 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const record = {
-    date: document.getElementById('date').value,
-    category: document.getElementById('category').value,
-    amount: parseFloat(document.getElementById('amount').value),
-    notes: document.getElementById('notes').value
+    date:    document.getElementById('date').value,
+    category:document.getElementById('category').value,
+    amount:  parseFloat(document.getElementById('amount').value),
+    notes:   document.getElementById('notes').value
   };
 
   await fetch(API_URL, {
@@ -20,6 +25,7 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
     body: JSON.stringify(record)
   });
 
+  // 重置表單並重新載入
   e.target.reset();
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   fetchRecords();
@@ -28,7 +34,6 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
 async function fetchRecords() {
   const res = await fetch(API_URL);
   const records = await res.json();
-
   renderList(records);
   renderCharts(records);
 }
@@ -36,7 +41,7 @@ async function fetchRecords() {
 function renderList(records) {
   const list = document.getElementById('recordList');
   list.innerHTML = '';
-
+  // 反轉順序，最新在上面
   records.slice().reverse().forEach(rec => {
     const li = document.createElement('li');
     li.textContent = `${rec.date}｜${rec.category}｜$${rec.amount}｜${rec.notes}`;
@@ -45,59 +50,55 @@ function renderList(records) {
 }
 
 function renderCharts(records) {
-  const dailyMap = {};
-  const monthlyMap = {};
-
+  // —— 每日：所有交易都畫一點 —— 
+  const dailyLabels = [];
+  const dailyValues = [];
   records.forEach(rec => {
-    const date = rec.date;
-    const month = rec.date.slice(0, 7);
-
-    // 每日總計
-    dailyMap[date] = (dailyMap[date] || 0) + parseFloat(rec.amount);
-
-    // 每月最高
-    if (!monthlyMap[month] || parseFloat(rec.amount) > monthlyMap[month]) {
-      monthlyMap[month] = parseFloat(rec.amount);
-    }
+    dailyLabels.push(`${rec.date} ${rec.time||''}`);
+    dailyValues.push(parseFloat(rec.amount));
   });
 
-  // 每日圖表
-  const dailyLabels = Object.keys(dailyMap).sort();
-  const dailyValues = dailyLabels.map(d => dailyMap[d]);
-
-  if (window.dailyChart) window.dailyChart.destroy();
+  if (dailyChart) dailyChart.destroy();
   const ctx1 = document.getElementById('dailyChart').getContext('2d');
-  window.dailyChart = new Chart(ctx1, {
+  dailyChart = new Chart(ctx1, {
     type: 'line',
     data: {
       labels: dailyLabels,
-      datasets: [{
-        label: '每日支出',
+      datasets: [{ 
+        label: '每筆支出', 
         data: dailyValues,
         borderColor: '#3B82F6',
         fill: false,
         tension: 0.3
       }]
-    }
+    },
+    options: { responsive: true }
   });
 
-  // 每月圖表
-  const monthlyLabels = Object.keys(monthlyMap).sort();
-  const monthlyValues = monthlyLabels.map(m => monthlyMap[m]);
+  // —— 每日最高支出 —— 
+  const maxMap = {};
+  records.forEach(rec => {
+    if (!maxMap[rec.date] || rec.amount > maxMap[rec.date].amount) {
+      maxMap[rec.date] = rec;
+    }
+  });
+  const maxLabels = Object.keys(maxMap).sort();
+  const maxValues = maxLabels.map(d => maxMap[d].amount);
 
-  if (window.monthlyChart) window.monthlyChart.destroy();
+  if (monthlyChart) monthlyChart.destroy();
   const ctx2 = document.getElementById('monthlyChart').getContext('2d');
-  window.monthlyChart = new Chart(ctx2, {
+  monthlyChart = new Chart(ctx2, {
     type: 'line',
     data: {
-      labels: monthlyLabels,
-      datasets: [{
-        label: '每月最高支出',
-        data: monthlyValues,
+      labels: maxLabels,
+      datasets: [{ 
+        label: '每日最高支出', 
+        data: maxValues,
         borderColor: '#10B981',
         fill: false,
         tension: 0.3
       }]
-    }
+    },
+    options: { responsive: true }
   });
 }
