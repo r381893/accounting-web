@@ -1,41 +1,24 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>雲端記帳本</title>
+  <title>雲端記事本</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>雲端記帳系統</h1>
-    <form id="recordForm">
-      <label>日期 <input type="date" id="date" required></label>
-      <label>類別
-        <select id="category" required>
-          <option value="飲食">飲食</option>
-          <option value="交通">交通</option>
-          <option value="娛樂">娛樂</option>
-          <option value="生活">生活</option>
-        </select>
-      </label>
-      <label>金額 <input type="number" id="amount" required></label>
-      <label>備註 <input type="text" id="notes"></label>
-      <button type="submit">新增記錄</button>
+    <h1>雲端記事本</h1>
+    <form id="noteForm">
+      <label>日期 <input type="date" id="date" required /></label>
+      <label>時間 <input type="time" id="time" required /></label>
+      <label>價格 <input type="number" id="price" required /></label>
+      <label>內容 <input type="text" id="content" required /></label>
+      <button type="submit">新增紀錄</button>
     </form>
-
-    <h2>每日支出圖表</h2>
-    <canvas id="dailyChart"></canvas>
-
-    <h2>每月最高支出圖表</h2>
-    <canvas id="monthlyChart"></canvas>
-
-    <h2>所有記錄</h2>
-    <ul id="recordList"></ul>
+    <hr />
+    <div id="recordList"></div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
