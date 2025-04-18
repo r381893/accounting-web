@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbzRhsu5ulkyBZkWO8A1l_SQM8jbHKYw9JWBR1ZTB8rmjhVdAmxwogxLUYnHD2i2zko5eg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzb6mVWD0lqrLU1OQRydoNyU4fVW2IpPacngUQDZOpWPv_eddIIQMr5uLlOqDEBYKbB5A/exec';
 
 let chart = null;
 let currentRecords = [];
