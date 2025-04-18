@@ -1,11 +1,9 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzRhsu5ulkyBZkWO8A1l_SQM8jbHKYw9JWBR1ZTB8rmjhVdAmxwogxLUYnHD2i2zko5eg/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 自動填入今日日期與現在時間
   const now = new Date();
   document.getElementById('date').value = now.toISOString().split('T')[0];
   document.getElementById('time').value = now.toTimeString().slice(0, 5);
-
   loadRecords();
 });
 
@@ -34,10 +32,12 @@ async function loadRecords() {
 
   const list = document.getElementById('recordList');
   list.innerHTML = records.reverse().map(r => {
-    const time = parseTimeString(r.time);
+    const formattedDate = formatDate(r.date);
+    const formattedTime = formatTime(r.time);
+
     return `
       <div class="note">
-        <strong>${r.date} ${time}</strong><br/>
+        <strong>${formattedDate} ${formattedTime}</strong><br/>
         價格：$${r.price} <br/>
         內容：${r.content}
       </div>
@@ -45,15 +45,28 @@ async function loadRecords() {
   }).join('');
 }
 
-// 處理時間欄位格式問題
-function parseTimeString(timeStr) {
-  if (typeof timeStr === 'string' && timeStr.includes('T')) {
-    try {
-      const t = new Date(timeStr);
-      return t.toTimeString().slice(0, 5); // "13:45"
-    } catch (e) {
-      return timeStr;
+// ✅ 時間字串修正（避免顯示 1899）
+function formatTime(timeStr) {
+  try {
+    if (typeof timeStr === 'string' && timeStr.includes('T')) {
+      const d = new Date(timeStr);
+      return d.toTimeString().slice(0, 5);
     }
+    return timeStr;
+  } catch (e) {
+    return timeStr;
   }
-  return timeStr; // 原樣輸出（"13:30" 這種正常時間）
+}
+
+// ✅ 日期也處理一下（防止格式不一致）
+function formatDate(dateStr) {
+  try {
+    if (typeof dateStr === 'string' && dateStr.includes('T')) {
+      const d = new Date(dateStr);
+      return d.toISOString().split('T')[0];
+    }
+    return dateStr;
+  } catch (e) {
+    return dateStr;
+  }
 }
