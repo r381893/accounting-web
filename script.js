@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('recordForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const now = new Date();
   const hhmm = now.toTimeString().slice(0, 5);
 
@@ -53,6 +54,7 @@ function renderCharts(records) {
   records.forEach(rec => {
     dailyMap[rec.date] = (dailyMap[rec.date] || 0) + rec.amount;
   });
+
   const dailyLabels = Object.keys(dailyMap).sort();
   const dailyValues = dailyLabels.map(d => dailyMap[d]);
 
@@ -86,6 +88,7 @@ function renderCharts(records) {
       maxMap[rec.date] = rec;
     }
   });
+
   const maxLabels = Object.keys(maxMap).sort();
   const maxValues = maxLabels.map(d => maxMap[d].amount);
 
