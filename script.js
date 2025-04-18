@@ -60,6 +60,7 @@ async function loadRecords() {
 
 async function deleteRecord(index) {
   if (!confirm("確定要刪除這筆紀錄嗎？")) return;
+
   const payload = { deleteIndex: index };
 
   await fetch(API_URL, {
