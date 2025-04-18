@@ -4,8 +4,13 @@ let chart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const now = new Date();
-  document.getElementById('date').value = now.toISOString().split('T')[0];
-  document.getElementById('time').value = now.toTimeString().slice(0, 5);
+  const dateInput = document.getElementById('date');
+  const timeInput = document.getElementById('time');
+
+  // 自動填入當日日期與時間（時間固定為 HH:mm 格式）
+  dateInput.value = now.toISOString().split('T')[0];
+  timeInput.value = now.toTimeString().slice(0, 5);
+
   loadRecords();
 });
 
@@ -25,6 +30,10 @@ document.getElementById('noteForm').addEventListener('submit', async e => {
   });
 
   document.getElementById('noteForm').reset();
+  const now = new Date();
+  document.getElementById('date').value = now.toISOString().split('T')[0];
+  document.getElementById('time').value = now.toTimeString().slice(0, 5);
+
   loadRecords();
 });
 
@@ -41,19 +50,27 @@ async function loadRecords() {
     </div>
   `).join('');
 
-  drawChart(records);
+  // 等 DOM 渲染完再畫圖
+  setTimeout(() => drawChart(records), 0);
 }
 
 function drawChart(records) {
   const today = new Date().toISOString().split('T')[0];
   const todayRecords = records.filter(r => r.date === today);
 
+  if (todayRecords.length === 0) {
+    const canvas = document.getElementById('dailyChart');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
   const labels = todayRecords.map(r => r.time);
   const data = todayRecords.map(r => Number(r.price));
 
   const ctx = document.getElementById('dailyChart').getContext('2d');
 
-  if (chart) chart.destroy(); // 清除舊圖
+  if (chart) chart.destroy(); // 移除舊圖
 
   chart = new Chart(ctx, {
     type: 'line',
@@ -62,12 +79,12 @@ function drawChart(records) {
       datasets: [{
         label: '當日金額變化',
         data,
-        fill: false,
-        tension: 0.4,
         borderColor: '#3498db',
         backgroundColor: '#3498db',
+        tension: 0.4,
         borderWidth: 2,
-        pointRadius: 3
+        pointRadius: 3,
+        fill: false
       }]
     },
     options: {
