@@ -4,21 +4,125 @@
   <meta charset="UTF-8" />
   <title>雲端記事本</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    label {
+      display: block;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .note {
+      background: #ecf0f1;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    .note strong {
+      color: #2c3e50;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>雲端記事本</h1>
     <form id="noteForm">
-      <label>日期 <input type="date" id="date" required /></label>
-      <label>時間 <input type="time" id="time" required /></label>
-      <label>價格 <input type="number" id="price" required /></label>
-      <label>內容 <input type="text" id="content" required /></label>
+      <label>日期
+        <input type="date" id="date" required />
+      </label>
+      <label>時間
+        <input type="time" id="time" required />
+      </label>
+      <label>價格
+        <input type="number" id="price" required />
+      </label>
+      <label>內容
+        <input type="text" id="content" required />
+      </label>
       <button type="submit">新增紀錄</button>
     </form>
-    <hr />
     <div id="recordList"></div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzRhsu5ulkyBZkWO8A1l_SQM8jbHKYw9JWBR1ZTB8rmjhVdAmxwogxLUYnHD2i2zko5eg/exec';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      document.getElementById('date').value = now.toISOString().split('T')[0];
+      document.getElementById('time').value = now.toTimeString().slice(0, 5);
+      loadRecords();
+    });
+
+    document.getElementById('noteForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        price: parseFloat(document.getElementById('price').value),
+        content: document.getElementById('content').value
+      };
+      await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      document.getElementById('noteForm').reset();
+      loadRecords();
+    });
+
+    async function loadRecords() {
+      const res = await fetch(API_URL);
+      const records = await res.json();
+      const list = document.getElementById('recordList');
+      list.innerHTML = records.reverse().map(r => `
+        <div class="note">
+          <strong>${r.date} ${r.time}</strong><br/>
+          價格：$${r.price}<br/>
+          內容：${r.content}
+        </div>
+      `).join('');
+    }
+  </script>
 </body>
 </html>
