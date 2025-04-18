@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbzwFRgjJwVJG-VAJr-9JWni7tqQA70e3LQfZ322K-ywuQQmnGg8ZV_4YnPNWR8sNr8zpA/exec'; // 👈 請貼上你自己的 /exec 網址
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwFRgjJwVJG-VAJr-9JWni7tqQA70e3LQfZ322K-ywuQQmnGg8ZV_4YnPNWR8sNr8zpA/exec';
 
 let dailyChart = null;
 let monthlyChart = null;
@@ -10,16 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('recordForm').addEventListener('submit', async e => {
   e.preventDefault();
-
   const now = new Date();
   const hhmm = now.toTimeString().slice(0, 5);
 
   const record = {
-    date:     document.getElementById('date').value,
-    time:     hhmm,
+    date: document.getElementById('date').value,
+    time: hhmm,
     category: document.getElementById('category').value,
-    amount:   parseFloat(document.getElementById('amount').value),
-    notes:    document.getElementById('notes').value
+    amount: parseFloat(document.getElementById('amount').value),
+    notes: document.getElementById('notes').value
   };
 
   await fetch(API_URL, {
@@ -54,7 +53,6 @@ function renderCharts(records) {
   records.forEach(rec => {
     dailyMap[rec.date] = (dailyMap[rec.date] || 0) + rec.amount;
   });
-
   const dailyLabels = Object.keys(dailyMap).sort();
   const dailyValues = dailyLabels.map(d => dailyMap[d]);
 
@@ -88,7 +86,6 @@ function renderCharts(records) {
       maxMap[rec.date] = rec;
     }
   });
-
   const maxLabels = Object.keys(maxMap).sort();
   const maxValues = maxLabels.map(d => maxMap[d].amount);
 
