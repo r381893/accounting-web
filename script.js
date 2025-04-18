@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycby8ZyqnbSDdLQqh6G2c0VeDloo7GT1GzGuvRv8a-GY9vGAulOPjJY6kUDPTYxBX5nSB/exec '; // 👈 請貼上你自己的 /exec 網址
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwFRgjJwVJG-VAJr-9JWni7tqQA70e3LQfZ322K-ywuQQmnGg8ZV_4YnPNWR8sNr8zpA/exec '; // 👈 請貼上你自己的 /exec 網址
 
 let dailyChart = null;
 let monthlyChart = null;
