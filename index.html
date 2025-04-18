@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <title>雲端記事本</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="https://fav.farm/📘" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="https://fav.farm/📝" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: "Noto Sans TC", sans-serif;
-      background: #f2f4f8;
+      background: #f4f6f9;
       margin: 0;
       padding: 1rem;
     }
@@ -19,7 +20,7 @@
       background: white;
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     h1 {
       text-align: center;
@@ -56,9 +57,6 @@
       border-radius: 8px;
       margin-top: 1rem;
     }
-    canvas {
-      margin-top: 2rem;
-    }
     .delete-btn {
       margin-top: 6px;
       background: #e74c3c;
@@ -67,6 +65,9 @@
       padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
+    }
+    canvas {
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -90,6 +91,7 @@
     </form>
 
     <canvas id="dailyChart" height="200"></canvas>
+    <canvas id="monthlyChart" height="200"></canvas>
     <div id="recordList"></div>
   </div>
 
