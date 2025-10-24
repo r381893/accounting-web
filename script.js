@@ -19,6 +19,23 @@ function saveRecords(records) {
     localStorage.setItem('expenseRecords', JSON.stringify(records));
 }
 
+// 輔助函數：設置日期和時間的預設值 (新增功能)
+function setDefaultDateTime() {
+    const now = new Date();
+    
+    // 格式化日期為 YYYY-MM-DD
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    document.getElementById('date').value = `${year}-${month}-${day}`;
+
+    // 格式化時間為 HH:MM
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('time').value = `${hours}:${minutes}`;
+}
+
+
 // --- 資料管理與渲染 ---
 
 /**
@@ -33,10 +50,11 @@ function renderRecords() {
     });
 
     recordList.innerHTML = ''; // 清空當前列表
+    setDefaultDateTime(); // 每次渲染後重置表單日期時間為當前時間
 
     if (records.length === 0) {
         recordList.innerHTML = '<p style="text-align: center; margin-top: 20px;">尚無紀錄 📝</p>';
-        updateChart([]); // 用空資料更新圖表
+        updateChart([]); // 更新圖表
         return;
     }
 
@@ -44,31 +62,31 @@ function renderRecords() {
         const recordElement = document.createElement('div');
         recordElement.classList.add('note');
         
-        // 格式化日期/時間和價格
         const dateTimeStr = `${record.date} ${record.time}`;
-        const priceStr = `\$${parseFloat(record.price).toLocaleString()}`; 
         
-        // --- 顯示新增的欄位資料 ---
-        const newFields = `
-            <p><strong>大盤指數:</strong> ${parseFloat(record.marketIndex).toLocaleString()}</p>
-            <p><strong>價平履約價:</strong> ${parseFloat(record.atmStrike).toLocaleString()}</p>
-            <p><strong>庫存履約價:</strong> ${parseFloat(record.inventoryStrike).toLocaleString()}</p>
-            <p><strong>庫存買入價:</strong> \$${parseFloat(record.inventoryBuyPrice).toLocaleString()}</p>
-            <p><strong>庫存即時價格:</strong> \$${parseFloat(record.inventoryCurrentPrice).toLocaleString()}</p>
-            <p><strong>庫存當時大盤:</strong> ${parseFloat(record.inventoryMarketIndex).toLocaleString()}</p>
+        // 輔助函數：格式化數字和價格
+        const formatNumber = (num) => parseFloat(num).toLocaleString() || 'N/A';
+        const formatPrice = (num) => `$${formatNumber(num)}`;
+        
+        // 顯示所有欄位資料
+        const fields = `
+            <p><strong>大盤指數:</strong> ${formatNumber(record.marketIndex)}</p>
+            <p><strong>價平履約價:</strong> ${formatNumber(record.atmStrike)}</p>
+            <p><strong>庫存履約價:</strong> ${formatNumber(record.inventoryStrike)}</p>
+            <p><strong>庫存買入價:</strong> ${formatPrice(record.inventoryBuyPrice)}</p>
+            <p><strong>庫存即時價格:</strong> ${formatPrice(record.inventoryCurrentPrice)}</p>
+            <p><strong>庫存當時大盤:</strong> ${formatNumber(record.inventoryMarketIndex)}</p>
         `;
-        // -----------------------------
 
         recordElement.innerHTML = `
             <p><strong>日期/時間:</strong> ${dateTimeStr}</p>
-            <p><strong>內容 (交易說明):</strong> ${record.content}</p>
-            <p><strong>價格 (權利金):</strong> <span style="color: #e74c3c; font-weight: bold;">${priceStr}</span></p>
-            ${newFields} <button class="delete-btn" data-index="${index}">刪除</button>
+            ${fields}
+            <button class="delete-btn" data-index="${index}">刪除</button>
         `;
         recordList.appendChild(recordElement);
     });
 
-    // 為所有刪除按鈕添加事件監聽器
+    // Add event listeners for delete buttons
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', deleteRecord);
     });
@@ -82,7 +100,6 @@ function renderRecords() {
 function deleteRecord(event) {
     const indexToDelete = parseInt(event.target.getAttribute('data-index'));
     
-    // 獲取記錄，並重新排序以確保刪除的索引正確對應到顯示的列表
     let records = getRecords().sort((a, b) => {
         const dateA = new Date(`${a.date}T${a.time}`);
         const dateB = new Date(`${b.date}T${b.time}`);
@@ -96,43 +113,19 @@ function deleteRecord(event) {
 
 
 // --- 圖表邏輯 (Chart.js) ---
-// 這裡的圖表仍只計算原有的 '價格' (權利金) 欄位總和。
+// 由於刪除了 '價格' 欄位，圖表計算將失效。圖表將顯示空數據。
 
-/**
- * 計算每日支出總額。
- */
 function calculateDailyTotals(records) {
-    const dailyTotals = {};
-
-    records.forEach(record => {
-        const date = record.date;
-        // 僅使用 price (權利金) 進行圖表計算
-        const price = parseFloat(record.price); 
-        
-        if (!dailyTotals[date]) {
-            dailyTotals[date] = 0;
-        }
-        dailyTotals[date] += price;
-    });
-
-    // 提取標籤 (日期) 和資料 (總額) 並按日期排序
-    const sortedDates = Object.keys(dailyTotals).sort();
-    const labels = sortedDates;
-    const data = sortedDates.map(date => dailyTotals[date]);
-
-    return { labels, data };
+    return { labels: [], data: [] };
 }
 
-/**
- * 更新或初始化 Chart.js 的每日支出圖表。
- */
 function updateChart(records) {
     const { labels, data } = calculateDailyTotals(records);
 
     const chartData = {
         labels: labels,
         datasets: [{
-            label: '每日支出總和 (NT$)',
+            label: '每日總和 (價格欄位已移除)',
             data: data,
             backgroundColor: 'rgba(52, 152, 219, 0.8)', 
             borderColor: '#3498db',
@@ -165,7 +158,7 @@ function updateChart(records) {
             },
             title: {
                 display: true,
-                text: '每日權利金總額趨勢圖',
+                text: '圖表暫停顯示 (價格/權利金欄位已被移除)',
             }
         }
     };
@@ -191,13 +184,11 @@ function updateChart(records) {
 function handleFormSubmit(event) {
     event.preventDefault(); 
 
-    // 1. 獲取原有輸入值
+    // 1. 獲取日期和時間
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
-    const price = document.getElementById('price').value; // 權利金
-    const content = document.getElementById('content').value.trim();
 
-    // 2. 獲取新增的七個欄位值
+    // 2. 獲取期權欄位值
     const marketIndex = document.getElementById('marketIndex').value;
     const atmStrike = document.getElementById('atmStrike').value;
     const inventoryStrike = document.getElementById('inventoryStrike').value;
@@ -205,19 +196,20 @@ function handleFormSubmit(event) {
     const inventoryCurrentPrice = document.getElementById('inventoryCurrentPrice').value;
     const inventoryMarketIndex = document.getElementById('inventoryMarketIndex').value;
     
-    // 簡單的驗證
-    if (!date || !time || !price || !content || !marketIndex || !atmStrike || !inventoryStrike || !inventoryBuyPrice || !inventoryCurrentPrice || !inventoryMarketIndex) {
+    // 驗證所有欄位
+    if (!date || !time || !marketIndex || !atmStrike || !inventoryStrike || !inventoryBuyPrice || !inventoryCurrentPrice || !inventoryMarketIndex) {
         alert('請確保所有欄位都已填寫！');
         return;
     }
     
-    // 3. 建立新的記錄物件 (包含所有欄位)
+    // 3. 建立新的記錄物件 (價格和內容將被設置為預設值)
     const newRecord = { 
         date, 
         time, 
-        price: parseFloat(price), 
-        content,
-        // 新增欄位
+        // 價格 (price) 和 內容 (content) 已被移除，保留欄位名稱並設置為空值，以避免舊紀錄結構出錯
+        price: 0, 
+        content: '',
+        // 期權欄位
         marketIndex: parseFloat(marketIndex),
         atmStrike: parseFloat(atmStrike),
         inventoryStrike: parseFloat(inventoryStrike),
@@ -238,4 +230,9 @@ function handleFormSubmit(event) {
 // --- 初始化執行 ---
 
 noteForm.addEventListener('submit', handleFormSubmit);
-document.addEventListener('DOMContentLoaded', renderRecords);
+
+// 頁面加載完成後執行：設置預設時間日期，並渲染記錄
+document.addEventListener('DOMContentLoaded', () => {
+    setDefaultDateTime();
+    renderRecords();
+});
