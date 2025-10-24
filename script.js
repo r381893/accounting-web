@@ -4,9 +4,7 @@
 
 const noteForm = document.getElementById('noteForm');
 const recordList = document.getElementById('recordList');
-const dailyChartCanvas = document.getElementById('dailyChart');
-
-let dailyChart; 
+// const dailyChartCanvas = document.getElementById('dailyChart'); // 移除圖表相關變數
 
 // 輔助函數：從 localStorage 獲取記錄
 function getRecords() {
@@ -39,7 +37,7 @@ function setDefaultDateTime() {
 // --- 資料管理與渲染 ---
 
 /**
- * 渲染記錄列表並更新圖表。
+ * 渲染記錄列表。
  */
 function renderRecords() {
     // 獲取所有記錄並按日期/時間降序排序（最新在前）
@@ -54,8 +52,7 @@ function renderRecords() {
 
     if (records.length === 0) {
         recordList.innerHTML = '<p style="text-align: center; margin-top: 20px;">尚無紀錄 📝</p>';
-        updateChart([]); // 更新圖表
-        return;
+        return; // 無需更新圖表
     }
 
     records.forEach((record, index) => {
@@ -64,7 +61,8 @@ function renderRecords() {
         
         const dateTimeStr = `${record.date} ${record.time}`;
         
-        // 輔助函數：格式化數字和價格。如果值是 0 或 NaN，顯示 N/A
+        // 輔助函數：格式化數字和價格。
+        // 使用 parseFloat(num).toLocaleString() 來處理數字格式，如果為空則顯示 'N/A'
         const formatNumber = (num) => (num || num === 0) ? parseFloat(num).toLocaleString() : 'N/A';
         const formatPrice = (num) => (num || num === 0) ? `$${formatNumber(num)}` : 'N/A';
         
@@ -91,7 +89,7 @@ function renderRecords() {
         button.addEventListener('click', deleteRecord);
     });
 
-    updateChart(records);
+    // 移除 updateChart(records);
 }
 
 /**
@@ -112,70 +110,6 @@ function deleteRecord(event) {
 }
 
 
-// --- 圖表邏輯 (Chart.js) ---
-// 由於刪除了 '價格' 欄位，圖表計算將失效。圖表將顯示空數據。
-
-function calculateDailyTotals(records) {
-    return { labels: [], data: [] };
-}
-
-function updateChart(records) {
-    const { labels, data } = calculateDailyTotals(records);
-
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: '每日總和 (價格欄位已移除)',
-            data: data,
-            backgroundColor: 'rgba(52, 152, 219, 0.8)', 
-            borderColor: '#3498db',
-            borderWidth: 1,
-            borderRadius: 4,
-        }]
-    };
-
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false, 
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: '金額 (NT$)'
-                }
-            },
-            x: {
-                title: {
-                    display: true,
-                    text: '日期'
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: true,
-            },
-            title: {
-                display: true,
-                text: '圖表暫停顯示 (價格/權利金欄位已被移除)',
-            }
-        }
-    };
-
-    if (dailyChart) {
-        dailyChart.data = chartData;
-        dailyChart.update();
-    } else {
-        dailyChart = new Chart(dailyChartCanvas, {
-            type: 'bar',
-            data: chartData,
-            options: chartOptions
-        });
-    }
-}
-
-
 // --- 事件處理器 ---
 
 /**
@@ -184,7 +118,7 @@ function updateChart(records) {
 function handleFormSubmit(event) {
     event.preventDefault(); 
 
-    // 1. 獲取日期和時間 (這是必須有值的欄位)
+    // 1. 獲取日期和時間
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
 
@@ -197,7 +131,8 @@ function handleFormSubmit(event) {
     // 2. 獲取期權欄位值，並在值為空時，強制轉為 '0' 確保 parseFloat 成功
     const getNumericValue = (id) => {
         const value = document.getElementById(id).value;
-        return parseFloat(value || '0'); // 如果是空字串，使用 '0'
+        // 如果是空字串，使用 '0'，否則使用原值。
+        return parseFloat(value || '0'); 
     };
 
     const marketIndex = getNumericValue('marketIndex');
@@ -211,7 +146,7 @@ function handleFormSubmit(event) {
     const newRecord = { 
         date, 
         time, 
-        // 價格 (price) 和 內容 (content) 保持預設值
+        // 價格 (price) 和 內容 (content) 保持預設值，以便兼容舊紀錄結構
         price: 0, 
         content: '',
         // 期權欄位 (已是數字)
@@ -230,7 +165,7 @@ function handleFormSubmit(event) {
 
     // 清空數字欄位，但保持日期時間為當前預設值
     noteForm.reset();
-    setDefaultDateTime(); // 確保日期時間保持在最新
+    setDefaultDateTime(); 
     
     renderRecords();
 }
