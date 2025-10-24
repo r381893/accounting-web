@@ -19,7 +19,7 @@ function saveRecords(records) {
     localStorage.setItem('expenseRecords', JSON.stringify(records));
 }
 
-// 輔助函數：設置日期和時間的預設值 (新增功能)
+// 輔助函數：設置日期和時間的預設值
 function setDefaultDateTime() {
     const now = new Date();
     
@@ -64,9 +64,9 @@ function renderRecords() {
         
         const dateTimeStr = `${record.date} ${record.time}`;
         
-        // 輔助函數：格式化數字和價格
-        const formatNumber = (num) => parseFloat(num).toLocaleString() || 'N/A';
-        const formatPrice = (num) => `$${formatNumber(num)}`;
+        // 輔助函數：格式化數字和價格。如果值是 0 或 NaN，顯示 N/A
+        const formatNumber = (num) => (num || num === 0) ? parseFloat(num).toLocaleString() : 'N/A';
+        const formatPrice = (num) => (num || num === 0) ? `$${formatNumber(num)}` : 'N/A';
         
         // 顯示所有欄位資料
         const fields = `
@@ -184,38 +184,43 @@ function updateChart(records) {
 function handleFormSubmit(event) {
     event.preventDefault(); 
 
-    // 1. 獲取日期和時間
+    // 1. 獲取日期和時間 (這是必須有值的欄位)
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
 
-    // 2. 獲取期權欄位值
-    const marketIndex = document.getElementById('marketIndex').value;
-    const atmStrike = document.getElementById('atmStrike').value;
-    const inventoryStrike = document.getElementById('inventoryStrike').value;
-    const inventoryBuyPrice = document.getElementById('inventoryBuyPrice').value;
-    const inventoryCurrentPrice = document.getElementById('inventoryCurrentPrice').value;
-    const inventoryMarketIndex = document.getElementById('inventoryMarketIndex').value;
-    
-    // 驗證所有欄位
-    if (!date || !time || !marketIndex || !atmStrike || !inventoryStrike || !inventoryBuyPrice || !inventoryCurrentPrice || !inventoryMarketIndex) {
-        alert('請確保所有欄位都已填寫！');
+    // 驗證日期和時間是否為空
+    if (!date || !time) {
+        alert('日期和時間欄位是必填的！');
         return;
     }
+
+    // 2. 獲取期權欄位值，並在值為空時，強制轉為 '0' 確保 parseFloat 成功
+    const getNumericValue = (id) => {
+        const value = document.getElementById(id).value;
+        return parseFloat(value || '0'); // 如果是空字串，使用 '0'
+    };
+
+    const marketIndex = getNumericValue('marketIndex');
+    const atmStrike = getNumericValue('atmStrike');
+    const inventoryStrike = getNumericValue('inventoryStrike');
+    const inventoryBuyPrice = getNumericValue('inventoryBuyPrice');
+    const inventoryCurrentPrice = getNumericValue('inventoryCurrentPrice');
+    const inventoryMarketIndex = getNumericValue('inventoryMarketIndex');
     
-    // 3. 建立新的記錄物件 (價格和內容將被設置為預設值)
+    // 3. 建立新的記錄物件
     const newRecord = { 
         date, 
         time, 
-        // 價格 (price) 和 內容 (content) 已被移除，保留欄位名稱並設置為空值，以避免舊紀錄結構出錯
+        // 價格 (price) 和 內容 (content) 保持預設值
         price: 0, 
         content: '',
-        // 期權欄位
-        marketIndex: parseFloat(marketIndex),
-        atmStrike: parseFloat(atmStrike),
-        inventoryStrike: parseFloat(inventoryStrike),
-        inventoryBuyPrice: parseFloat(inventoryBuyPrice),
-        inventoryCurrentPrice: parseFloat(inventoryCurrentPrice),
-        inventoryMarketIndex: parseFloat(inventoryMarketIndex)
+        // 期權欄位 (已是數字)
+        marketIndex,
+        atmStrike,
+        inventoryStrike,
+        inventoryBuyPrice,
+        inventoryCurrentPrice,
+        inventoryMarketIndex
     };
 
     // 4. 儲存並更新介面
@@ -223,7 +228,10 @@ function handleFormSubmit(event) {
     records.push(newRecord);
     saveRecords(records);
 
+    // 清空數字欄位，但保持日期時間為當前預設值
     noteForm.reset();
+    setDefaultDateTime(); // 確保日期時間保持在最新
+    
     renderRecords();
 }
 
