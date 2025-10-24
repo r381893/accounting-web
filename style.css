@@ -1,0 +1,39 @@
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  background: #f7f9fc;
+  margin: 0;
+  padding: 2rem;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+label {
+  display: block;
+  margin-bottom: 1rem;
+}
+input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+#recordList {
+  margin-top: 2rem;
+}
+.note {
+  padding: 1rem;
+  background: #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
