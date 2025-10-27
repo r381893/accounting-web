@@ -14,7 +14,7 @@
       padding: 1rem;
     }
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
       background: white;
       padding: 2rem;
@@ -30,12 +30,13 @@
       margin-bottom: 1rem;
       font-weight: bold;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 0.5rem;
       margin-top: 0.3rem;
       border: 1px solid #ccc;
       border-radius: 6px;
+      box-sizing: border-box;
     }
     button {
       width: 100%;
@@ -58,6 +59,8 @@
     }
     canvas {
       margin-top: 2rem;
+      width: 100% !important;
+      height: 300px !important;
     }
     .delete-btn {
       margin-top: 6px;
@@ -68,6 +71,45 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .record {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 0.6rem;
+      margin-top: 0.6rem;
+      border: 1px solid #eee;
+    }
+    .record-left {
+      display: flex;
+      flex-direction: column;
+    }
+    .record-meta {
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .weekday {
+      display: inline-block;
+      margin-left: 0.6rem;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    .small {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .total-month {
+      margin-top: 0.6rem;
+      font-weight: bold;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -75,13 +117,16 @@
     <h1>雲端記事本</h1>
     <form id="noteForm">
       <label>日期
-        <input type="date" id="date" required />
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="date" id="date" required />
+          <span id="weekdayDisplay" class="weekday small"></span>
+        </div>
       </label>
       <label>時間
         <input type="time" id="time" required />
       </label>
       <label>價格
-        <input type="number" id="price" required />
+        <input type="number" id="price" required step="0.01" min="0" />
       </label>
       <label>內容
         <input type="text" id="content" required />
@@ -89,7 +134,9 @@
       <button type="submit">新增紀錄</button>
     </form>
 
-    <canvas id="dailyChart" height="200"></canvas>
+    <canvas id="dailyChart"></canvas>
+    <div class="total-month" id="monthTotal"></div>
+
     <div id="recordList"></div>
   </div>
 
